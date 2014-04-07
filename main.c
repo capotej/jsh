@@ -1,4 +1,9 @@
-#include <stdio.h>
+#include <sys/types.h> /* pid_t */
+#include <sys/wait.h>  /* waitpid */
+#include <stdio.h>     /* printf, perror */
+#include <stdlib.h>    /* exit */
+#include <unistd.h>    /* _exit, fork */
+#include <string.h>
 #include <readline/readline.h>
 
 static char *line = (char *)NULL;
@@ -23,7 +28,50 @@ int main() {
 
   do {
     char *cmd = read_cmd();
-    printf("cmd: %s\n", cmd);
+
+    pid_t pid;
+    pid = fork();
+
+    if (pid == -1) {
+      /*
+       * When fork() returns -1, an error happened.
+       */
+      perror("fork failed");
+      exit(EXIT_FAILURE);
+    } else if (pid == 0) {
+      /*
+      * When fork() returns 0, we are in the child process.
+      */
+      char *tok = strtok(cmd, " ");
+      char *toks[100];
+      char *argv0;
+      int i = 0;
+
+      while (tok != NULL) {
+        if(i == 0){
+          argv0 = tok;
+          toks[i] = tok;
+        } else {
+          toks[i] = tok;
+        }
+        i++;
+        tok = strtok(NULL, " ");
+      }
+      toks[i + 1] = NULL;
+      // printf("argv0: %s\n", argv0);
+      // printf("toks: %s\n", toks[0]);
+      execvp(argv0, toks);
+
+      _exit(EXIT_SUCCESS);  /* exit() is unreliable here, so _exit must be used */
+    } else {
+      /*
+       * When fork() returns a positive number, we are in the parent process
+       * and the return value is the PID of the newly created child process.
+       */
+      int status;
+      (void)waitpid(pid, &status, 0);
+    }
+
   } while (line != NULL);
 
 }
