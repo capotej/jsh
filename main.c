@@ -27,6 +27,11 @@ int builtin(char *cmd){
   return 0;
 }
 
+void fork_failed() {
+  perror("fork failed");
+  exit(EXIT_FAILURE);
+}
+
 int main() {
   printf("starting shell\n");
 
@@ -37,17 +42,8 @@ int main() {
     pid = fork();
 
     if (pid == -1) {
-      /*
-       * When fork() returns -1, an error happened.
-       */
-      perror("fork failed");
-      exit(EXIT_FAILURE);
+      fork_failed();
     } else if (pid == 0) {
-
-
-      /*
-      * When fork() returns 0, we are in the child process.
-      */
       char *tok = strtok(cmd, " ");
       char *toks[100];
       char *argv0;
