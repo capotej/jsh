@@ -23,6 +23,10 @@ char *read_cmd(){
   return (line);
 }
 
+int builtin(char *cmd){
+  return 0;
+}
+
 int main() {
   printf("starting shell\n");
 
@@ -39,6 +43,8 @@ int main() {
       perror("fork failed");
       exit(EXIT_FAILURE);
     } else if (pid == 0) {
+
+
       /*
       * When fork() returns 0, we are in the child process.
       */
@@ -46,6 +52,7 @@ int main() {
       char *toks[100];
       char *argv0;
       int i = 0;
+      int status;
 
       while (tok != NULL) {
         if(i == 0){
@@ -60,9 +67,13 @@ int main() {
       toks[i + 1] = NULL;
       // printf("argv0: %s\n", argv0);
       // printf("toks: %s\n", toks[0]);
-      execvp(argv0, toks);
+      if (builtin(cmd) == 1) {
+        printf("built in %s\n", cmd);
+      } else {
+        status = execvp(argv0, toks);
+      }
 
-      _exit(EXIT_SUCCESS);  /* exit() is unreliable here, so _exit must be used */
+      _exit(status);
     } else {
       /*
        * When fork() returns a positive number, we are in the parent process
@@ -74,4 +85,5 @@ int main() {
 
   } while (line != NULL);
 
+  exit(EXIT_SUCCESS);
 }
