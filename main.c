@@ -7,6 +7,7 @@
 #include <readline/readline.h>
 
 static char *line = (char *)NULL;
+static char *cwd = (char *)NULL;
 
 char *read_cmd()
 {
@@ -32,6 +33,7 @@ void fork_failed()
 
 void tokenize_args(char *cmd, char **toks)
 {
+  memset(toks, NULL, 256);
   int i = 0;
   char *tok = strtok(cmd, " ");
 
@@ -56,6 +58,9 @@ void fork_and_execute_cmd(char **argv){
   if (pid == -1) {
     fork_failed();
   } else if (pid == 0) {
+    if(cwd != NULL){
+      chdir(cwd);
+    }
     status = execvp(argv[0], argv);
     _exit(status);
   } else {
@@ -69,7 +74,12 @@ void handle_cmd(char *cmd)
 {
   char *argv[256];
   tokenize_args(cmd, argv);
-  fork_and_execute_cmd(argv);
+  if (strcmp(cmd, "cd") == 0){
+    printf("cding to %s\n", argv[1]);
+    cwd = argv[1];
+  } else {
+    fork_and_execute_cmd(argv);
+  }
 }
 
 int main() {
