@@ -9,31 +9,28 @@
 static char *line = (char *)NULL;
 static char *cwd = (char *)NULL;
 
-char *read_cmd()
+static char *read_cmd()
 {
   if (line) {
     free(line);
     line = (char *)NULL;
   }
-
   line = readline("$ ");
-
   if (line && *line) {
     add_history(line);
   }
-
   return (line);
 }
 
-void fork_failed()
+static void fork_failed()
 {
   perror("fork failed");
   exit(EXIT_FAILURE);
 }
 
-void tokenize_args(char *cmd, char **toks)
+static void tokenize_args(char *cmd, char **toks)
 {
-  memset(toks, NULL, 256);
+  memset(toks, 0, 256);
   int i = 0;
   char *tok = strtok(cmd, " ");
 
@@ -50,7 +47,8 @@ void tokenize_args(char *cmd, char **toks)
 }
 
 
-void fork_and_execute_cmd(char **argv){
+static void fork_and_execute_cmd(char **argv)
+{
   pid_t pid;
   pid = fork();
   int status;
@@ -64,13 +62,12 @@ void fork_and_execute_cmd(char **argv){
     status = execvp(argv[0], argv);
     _exit(status);
   } else {
-    int status;
     (void)waitpid(pid, &status, 0);
   }
 
 }
 
-void handle_cmd(char *cmd)
+static void handle_cmd(char *cmd)
 {
   char *argv[256];
   tokenize_args(cmd, argv);
@@ -82,7 +79,8 @@ void handle_cmd(char *cmd)
   }
 }
 
-int main() {
+int main()
+{
   printf("starting jsh\n");
 
   do {
